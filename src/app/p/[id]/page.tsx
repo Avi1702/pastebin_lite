@@ -11,14 +11,18 @@ export default async function PastePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // ✅ VERY IMPORTANT: await params
   const { id } = await params;
 
-  const res = await fetch(
-    `${process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : "http://localhost:3000"}/api/pastes/${id}`,
-    {
-      cache: "no-store",
-    }
-  );
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_BASE_URL is not defined");
+  }
+
+  const res = await fetch(`${baseUrl}/api/pastes/${id}`, {
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     notFound();
@@ -31,26 +35,16 @@ export default async function PastePage({
       <h1>Paste</h1>
 
       <pre
-          style={{
-            backgroundColor: "#ffffff",
-            color: "#111111",
-            opacity: 1,
-            padding: "1rem",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-          }}
+        style={{
+          backgroundColor: "#ffffff",
+          color: "#111111",
+          padding: "1rem",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+        }}
       >
         {data.content}
       </pre>
-
-      <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#555" }}>
-        {data.remaining_views !== null && (
-          <p>Remaining views: {data.remaining_views}</p>
-        )}
-        {data.expires_at && (
-          <p>Expires at: {new Date(data.expires_at).toLocaleString()}</p>
-        )}
-      </div>
     </main>
   );
-} 
+}
